@@ -1,8 +1,13 @@
 {
   "rewrites": [
-    {
-      "source": "/go/:slug*",
-      "destination": "/api/go"
+    { "source": "/go/:slug*", "destination": "/api/go" }
+  ],
+  "functions": {
+    "api/shorten.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/go.js": {
+      "runtime": "nodejs18.x"
     }
-  ]
+  }
 }
