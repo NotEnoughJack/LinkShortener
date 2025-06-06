@@ -13,6 +13,7 @@
     </form>
     <p id="result"></p>
   </div>
+
   <script>
     document.getElementById("shorten-form").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -22,8 +23,21 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: longUrl })
       });
+
       const data = await res.json();
-      document.getElementById("result").innerText = location.origin + "/go/" + data.id;
+      if (!data.id) return;
+
+      const shortLink = `${location.origin}/go/${data.id}`;
+      const resultEl = document.getElementById("result");
+
+      resultEl.innerHTML = `<a href="${shortLink}" target="_blank">${shortLink}</a> <span id="copied" style="color:lime;"></span>`;
+
+      try {
+        await navigator.clipboard.writeText(shortLink);
+        document.getElementById("copied").innerText = " (Copied!)";
+      } catch {
+        document.getElementById("copied").innerText = " (Copy failed)";
+      }
     });
   </script>
 </body>
