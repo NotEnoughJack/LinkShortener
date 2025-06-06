@@ -3,22 +3,35 @@ import path from 'path';
 
 const filePath = path.resolve('./data/urls.json');
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'No URL provided' });
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk;
+  });
 
-  const id = Math.random().toString(36).substring(2, 8);
+  req.on('end', () => {
+    try {
+      const { url } = JSON.parse(body);
+      if (!url) return res.status(400).json({ error: 'No URL provided' });
 
-  let urls = {};
-  if (fs.existsSync(filePath)) {
-    urls = JSON.parse(fs.readFileSync(filePath));
-  }
+      const id = Math.random().toString(36).substring(2, 8);
 
-  urls[id] = url;
-  fs.writeFileSync(filePath, JSON.stringify(urls, null, 2));
-  res.status(200).json({ id });
+      let urls = {};
+      if (fs.existsSync(filePath)) {
+        urls = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      }
+
+      urls[id] = url;
+      fs.writeFileSync(filePath, JSON.stringify(urls, null, 2));
+
+      res.status(200).json({ id });
+    } catch (err) {
+      res.status(500).json({ error: 'Internal server error', details: err.message });
+    }
+  });
 }
